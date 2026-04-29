@@ -11,12 +11,16 @@ const files = {
 
 console.log('Building API Inspector extension...\n');
 
-// Clean dist directory
+// Clean dist directory - skip if locked, just overwrite files
 if (fs.existsSync(distDir)) {
-  fs.rmSync(distDir, { recursive: true });
+  try {
+    fs.rmSync(distDir, { recursive: true, maxRetries: 3, retryDelay: 500 });
+    console.log('✓ Cleaned dist directory');
+  } catch (e) {
+    console.log('  Note: Could not delete dist (files in use), will overwrite existing files');
+  }
 }
 fs.mkdirSync(distDir, { recursive: true });
-console.log('✓ Cleaned dist directory');
 
 // Copy icons
 fs.cpSync('icons', path.join(distDir, 'icons'), { recursive: true });
