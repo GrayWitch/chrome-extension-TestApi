@@ -9,7 +9,19 @@ const files = {
   html: ['app.html']
 };
 
+function bumpVersion() {
+  const pkgPath = 'package.json';
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+  const parts = pkg.version.split('.');
+  parts[2] = parseInt(parts[2]) + 1;
+  pkg.version = parts.join('.');
+  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf-8');
+  console.log(`📌 Version bumped: ${parts[0]}.${parts[1]}.${parseInt(parts[2]) - 1} -> ${pkg.version}`);
+  return pkg;
+}
+
 console.log('Building API Inspector extension...\n');
+const pkg = bumpVersion();
 
 // Clean dist directory - skip if locked, just overwrite files
 if (fs.existsSync(distDir)) {
@@ -74,7 +86,7 @@ files.html.forEach(file => {
 const manifest = {
   manifest_version: 3,
   name: "API Inspector",
-  version: "1.0.0",
+  version: pkg.version,
   description: "拦截、查看、编辑和重放 API 请求",
   permissions: ["webRequest", "scripting", "activeTab", "tabs", "storage"],
   host_permissions: ["<all_urls>"],
@@ -100,7 +112,7 @@ const manifest = {
     }
   ]
 };
-fs.writeFileSync(path.join(distDir, 'manifest.json'), JSON.stringify(manifest, null, 2), 'utf-8');
+fs.writeFileSync(path.join(distDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
 console.log('✓ Generated manifest.json');
 
 console.log('\n✅ Build complete! Output in dist/ directory');
