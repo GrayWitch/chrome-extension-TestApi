@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>API Inspector</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <!-- 模式选择界面 -->
+  <div id="modeSelectOverlay" class="mode-select-overlay hidden">
+    <div class="mode-select-container">
+      <h2 class="mode-select-title" id="modeSelectTitle">API Inspector</h2>
+      <p class="mode-select-desc" id="modeSelectDesc">选择您需要的功能模式</p>
+      <div class="mode-buttons">
+        <button id="monitorModeBtn" class="mode-btn mode-monitor">
+          <div class="mode-icon">📡</div>
+          <div class="mode-name" id="monitorModeName">监听模式</div>
+          <div class="mode-desc" id="monitorModeDesc">捕获网页中的 API 请求</div>
+        </button>
+        <button id="testModeBtn" class="mode-btn mode-test">
+          <div class="mode-icon">🧪</div>
+          <div class="mode-name" id="testModeName">API 测试</div>
+          <div class="mode-desc" id="testModeDesc">手动测试 API 接口</div>
+        </button>
+      </div>
+      <div class="mode-source-info" id="modeSourceInfo"></div>
+    </div>
+  </div>
+
+  <div class="app-container hidden" id="appContainer">
+    <!-- 顶部工具栏 -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <span id="monitoredTab" class="monitored-tab">等待监控...</span>
+        <button id="toggleCapture" class="capture-btn active">
+          <span class="capture-icon">●</span> <span class="capture-text">捕获中</span>
+        </button>
+        <button id="clearList" class="btn-icon">清空</button>
+      </div>
+      <div class="toolbar-right">
+        <!-- 请求类型过滤 -->
+<div class="filter-group filter-checkboxes">
+          <label class="filter-label">类型:</label>
+          <label class="checkbox-label"><input type="checkbox" class="type-checkbox" value="all" checked><span class="checkbox-text">全部</span></label>
+          <label class="checkbox-label"><input type="checkbox" class="type-checkbox" value="fetch"><span class="checkbox-text">Fetch</span></label>
+          <label class="checkbox-label"><input type="checkbox" class="type-checkbox" value="xhr"><span class="checkbox-text">XHR</span></label>
+          <label class="checkbox-label"><input type="checkbox" class="type-checkbox" value="test"><span class="checkbox-text">测试</span></label>
+          <label class="checkbox-label"><input type="checkbox" class="type-checkbox" value="static"><span class="checkbox-text">静态</span></label>
+        </div>
+        <!-- 语言切换 -->
+        <div class="lang-switch">
+          <button class="lang-btn active" data-lang="zh">中文</button>
+          <button class="lang-btn" data-lang="en">EN</button>
+          <button class="lang-btn" data-lang="ko">한국어</button>
+        </div>
+        <input type="text" id="searchInput" class="search-input" placeholder="搜索 URL...">
+      </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+      <!-- 左侧请求列表 -->
+      <div class="requests-panel">
+        <div class="panel-header">
+          <h3>请求列表</h3>
+          <span id="requestCount">0</span>
+        </div>
+        <div id="requestList" class="request-list"></div>
+      </div>
+
+      <!-- 右侧编辑/响应区 -->
+      <div class="editor-panel">
+        <!-- 请求编辑区 -->
+        <div class="request-editor">
+          <div class="url-bar">
+            <select id="methodSelect" class="method-select">
+              <option value="GET">GET</option>
+              <option value="POST">POST</option>
+              <option value="PUT">PUT</option>
+              <option value="DELETE">DELETE</option>
+              <option value="PATCH">PATCH</option>
+            </select>
+            <input type="text" id="urlInput" class="url-input" placeholder="输入请求 URL...">
+            <button id="sendBtn" class="send-btn">发送</button>
+          </div>
+
+          <!-- Tabs -->
+          <div class="editor-tabs">
+            <button class="tab-btn active" data-tab="headers">Headers</button>
+            <button class="tab-btn" data-tab="body">Body</button>
+            <button class="tab-btn" data-tab="params">Params</button>
+          </div>
+
+          <!-- Headers Tab -->
+          <div id="headersTab" class="tab-content">
+            <div id="headersList" class="headers-list"></div>
+            <button id="addHeader" class="btn-add">+ 添加 Header</button>
+          </div>
+
+          <!-- Body Tab -->
+          <div id="bodyTab" class="tab-content hidden">
+            <div class="body-header">
+              <select id="bodyType" class="body-type-select">
+                <option value="json">JSON</option>
+                <option value="text">Text</option>
+              </select>
+              <button id="formatBodyBtn" class="format-btn" title="格式化">格式化</button>
+            </div>
+            <div id="bodyEditorContainer" class="editor-container"></div>
+          </div>
+
+          <!-- Params Tab -->
+          <div id="paramsTab" class="tab-content hidden">
+            <div id="paramsList" class="params-list"></div>
+            <button id="addParam" class="btn-add">+ 添加 Param</button>
+          </div>
+        </div>
+
+        <!-- 响应区 -->
+        <div class="response-panel">
+          <div class="response-header">
+            <span id="responseStatus" class="response-status">等待请求</span>
+            <span id="responseTime" class="response-time"></span>
+            <button id="fullscreenBtn" class="fullscreen-btn" title="全屏显示">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+              </svg>
+            </button>
+          </div>
+          <div class="response-tabs">
+            <button class="resp-tab-btn active" data-tab="respBody">Body</button>
+            <button class="resp-tab-btn" data-tab="respHeaders">Headers</button>
+            <button id="formatResponseBtn" class="format-btn" title="格式化">格式化</button>
+          </div>
+          <div id="respBodyTab" class="resp-tab-content">
+            <div id="responseEditorContainer" class="editor-container response-container"></div>
+          </div>
+          <div id="respHeadersTab" class="resp-tab-content hidden">
+            <table id="responseHeaders" class="resp-headers-table"></table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> <!-- app-container -->
+
+  <!-- Monaco Editor Scripts -->
+  <script src="monaco/vs/loader.js"></script>
+  <script src="monaco-config.js"></script>
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
